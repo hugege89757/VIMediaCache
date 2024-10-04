@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
-@import AVFoundation;
+#import "AVFoundation/AVFoundation.h"
+//@import AVFoundation;
 
 @interface PlayerView : UIView
 

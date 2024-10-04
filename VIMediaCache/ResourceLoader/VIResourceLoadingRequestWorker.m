@@ -10,9 +10,12 @@
 #import "VIMediaDownloader.h"
 #import "VIContentInfo.h"
 
-@import MobileCoreServices;
-@import AVFoundation;
-@import UIKit;
+#import <MobileCoreServices/MobileCoreServices.h>
+#import <AVFoundation/AVFoundation.h>
+#import <UIKit/UIKit.h>
+//@import MobileCoreServices;
+//@import AVFoundation;
+//@import UIKit;
 
 @interface VIResourceLoadingRequestWorker () <VIMediaDownloaderDelegate>
 

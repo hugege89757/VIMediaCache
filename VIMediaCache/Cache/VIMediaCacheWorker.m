@@ -9,8 +9,8 @@
 #import "VIMediaCacheWorker.h"
 #import "VICacheAction.h"
 #import "VICacheManager.h"
-
-@import UIKit;
+#import "UIKit/UIKit.h"
+//@import UIKit;
 
 static NSInteger const kPackageLength = 512 * 1024; // 512 kb per package
 static NSString *kMCMediaCacheResponseKey = @"kMCMediaCacheResponseKey";
