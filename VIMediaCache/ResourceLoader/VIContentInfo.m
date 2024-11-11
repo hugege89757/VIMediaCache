@@ -34,4 +34,12 @@ static NSString *kByteRangeAccessSupported = @"kByteRangeAccessSupported";
     return self;
 }
 
+- (id)copyWithZone:(nullable NSZone *)zone {
+    VIContentInfo *copy = [[[self class] allocWithZone:zone] init];
+    copy.contentType = [self.contentType copy];
+    copy.byteRangeAccessSupported = self.byteRangeAccessSupported;
+    copy.contentLength = self.contentLength;
+    copy.downloadedContentLength = self.downloadedContentLength;
+    return copy;
+}
 @end

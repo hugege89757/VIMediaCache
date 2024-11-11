@@ -118,13 +118,12 @@ static NSString *kURLKey = @"kURLKey";
 
 - (id)copyWithZone:(nullable NSZone *)zone {
     VICacheConfiguration *configuration = [[VICacheConfiguration allocWithZone:zone] init];
-    configuration.fileName = self.fileName;
-    configuration.filePath = self.filePath;
-    configuration.internalCacheFragments = self.internalCacheFragments;
-    configuration.downloadInfo = self.downloadInfo;
+    configuration.fileName = [self.fileName copy];
+    configuration.filePath = [self.filePath copy];
+    configuration.internalCacheFragments = [self.internalCacheFragments mutableCopy];
+    configuration.downloadInfo = [self.downloadInfo mutableCopy];
     configuration.url = self.url;
     configuration.contentInfo = self.contentInfo;
-    
     return configuration;
 }
 

@@ -57,13 +57,14 @@ NSString * const MCResourceLoaderErrorDomain = @"LSFilePlayerResourceLoaderError
 }
 
 - (void)removeRequest:(AVAssetResourceLoadingRequest *)request {
-    __block VIResourceLoadingRequestWorker *requestWorker = nil;
+    __block VIResourceLoadingRequestWorker * __strong requestWorker = nil;
     [self.pendingRequestWorkers enumerateObjectsUsingBlock:^(VIResourceLoadingRequestWorker *  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if (obj.request == request) {
             requestWorker = obj;
             *stop = YES;
         }
     }];
+
     if (requestWorker) {
         [requestWorker finish];
         [self.pendingRequestWorkers removeObject:requestWorker];
