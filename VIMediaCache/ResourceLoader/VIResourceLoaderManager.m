@@ -9,7 +9,7 @@
 #import "VIResourceLoaderManager.h"
 #import "VIResourceLoader.h"
 
-static NSString *kCacheScheme = @"VIMediaCache:";
+static NSString *kCacheScheme = @"vimediacache://";
 
 @interface VIResourceLoaderManager () <VIResourceLoaderDelegate>
 
@@ -57,7 +57,7 @@ static NSString *kCacheScheme = @"VIMediaCache:";
         [loader addRequest:loadingRequest];
         return YES;
     }
-    
+
     return NO;
 }
 
@@ -100,10 +100,16 @@ static NSString *kCacheScheme = @"VIMediaCache:";
         return nil;
     }
 
-    NSURL *assetURL = [NSURL URLWithString:[kCacheScheme stringByAppendingString:[url absoluteString]]];
-    if (assetURL == nil) {
-            return url;
-    }
+    // 获取原始 URL 的绝对字符串
+    NSString *originalURLString = [url absoluteString];
+    // 对原始 URL 进行百分号解码，防止重复编码
+    NSString *decodedURLString = [originalURLString stringByRemovingPercentEncoding];
+    // 对解码后的 URL 进行重新编码
+    NSString *encodedURLString = [decodedURLString stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLFragmentAllowedCharacterSet]];
+    // 拼接自定义 Scheme
+    NSString *cacheURLString = [NSString stringWithFormat:@"%@%@", kCacheScheme, encodedURLString];
+    // 创建 NSURL 对象
+    NSURL *assetURL = [NSURL URLWithString:cacheURLString];
     return assetURL;
 }
 
