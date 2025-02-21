@@ -114,11 +114,16 @@ static NSString *VIMediaCacheErrorDoamin = @"com.vimediacache";
         return [actions copy];
     }
     NSInteger endOffset = range.location + range.length;
+    NSLog(@"Debug: 请求范围：%@", NSStringFromRange(range));
+    NSLog(@"Debug: 缓存碎片：%@", cachedFragments);
     // Delete header and footer not in range
+    // 处理本地缓存碎片，生成本地缓存任务
     [cachedFragments enumerateObjectsUsingBlock:^(NSValue * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSRange fragmentRange = obj.rangeValue;
         NSRange intersectionRange = NSIntersectionRange(range, fragmentRange);
+        NSLog(@"Debug: 缓存碎片范围：%@ 与 请求范围交集：%@", NSStringFromRange(fragmentRange), NSStringFromRange(intersectionRange));
         if (intersectionRange.length > 0) {
+            // 按包大小拆分
             NSInteger package = intersectionRange.length / kPackageLength;
             for (NSInteger i = 0; i <= package; i++) {
                 VICacheAction *action = [VICacheAction new];
@@ -129,20 +134,22 @@ static NSString *VIMediaCacheErrorDoamin = @"com.vimediacache";
                 NSInteger maxLocation = intersectionRange.location + intersectionRange.length;
                 NSInteger length = (offsetLocation + kPackageLength) > maxLocation ? (maxLocation - offsetLocation) : kPackageLength;
                 action.range = NSMakeRange(offsetLocation, length);
-                
+                NSLog(@"Debug: 添加本地任务：%@", NSStringFromRange(action.range));
                 [actions addObject:action];
             }
         } else if (fragmentRange.location >= endOffset) {
             *stop = YES;
         }
     }];
-    
+    // 若无本地任务，则全部为远程任务
     if (actions.count == 0) {
         VICacheAction *action = [VICacheAction new];
         action.actionType = VICacheAtionTypeRemote;
         action.range = range;
+        NSLog(@"Debug: 无本地缓存，添加远程任务：%@", NSStringFromRange(range));
         [actions addObject:action];
     } else {
+        // 补充远程任务填充本地任务间的空隙
         // Add remote fragments
         NSMutableArray *localRemoteActions = [NSMutableArray array];
         [actions enumerateObjectsUsingBlock:^(VICacheAction * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {

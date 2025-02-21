@@ -26,7 +26,7 @@
 
 @end
 
-static NSInteger kBufferSize = 10 * 1024;
+static NSInteger kBufferSize = 2 * 1024;
 
 @interface VIURLSessionDelegateObject : NSObject <NSURLSessionDelegate>
 
@@ -65,7 +65,7 @@ didReceiveResponse:(NSURLResponse *)response
     didReceiveData:(NSData *)data {
     @synchronized (self.bufferData) {
         [self.bufferData appendData:data];
-        if (self.bufferData.length > 0) { //kBufferSize
+        if (self.bufferData.length >= kBufferSize) { // 1kb
             NSRange chunkRange = NSMakeRange(0, self.bufferData.length);
             NSData *chunkData = [self.bufferData subdataWithRange:chunkRange];
             [self.bufferData replaceBytesInRange:chunkRange withBytes:NULL length:0];
@@ -282,7 +282,11 @@ didReceiveResponse:(NSURLResponse *)response
     // Only download video/audio data
     if ([mimeType rangeOfString:@"video/"].location == NSNotFound &&
         [mimeType rangeOfString:@"audio/"].location == NSNotFound &&
+        [mimeType rangeOfString:@"text/html"].location == NSNotFound &&
         [mimeType rangeOfString:@"application"].location == NSNotFound) {
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+        NSLog(@"Response Status Code: %ld", (long)httpResponse.statusCode);
+        NSLog(@"Response Headers:mimeType:%@ %@ ", mimeType,httpResponse.allHeaderFields);
         completionHandler(NSURLSessionResponseCancel);
     } else {
         if ([self.delegate respondsToSelector:@selector(actionWorker:didReceiveResponse:)]) {
@@ -316,6 +320,7 @@ didReceiveResponse:(NSURLResponse *)response
     }
     
     self.startOffset += data.length;
+    NSLog(@"拉去新数据 %zd",self.startOffset);
     if ([self.delegate respondsToSelector:@selector(actionWorker:didReceiveData:isLocal:)]) {
         [self.delegate actionWorker:self didReceiveData:data isLocal:NO];
     }
