@@ -170,7 +170,24 @@ didCompleteWithError:(nullable NSError *)error {
 
 - (NSURLSession *)session {
     if (!_session) {
+
+        // 创建会话配置
         NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+        ///
+        // 设置代理服务器的地址和端口
+        
+//        NSDictionary *proxyDict = @{
+//            @"HTTPEnable"  : [NSNumber numberWithInt:1],
+//            (NSString *)kCFStreamPropertyHTTPProxyHost  : @"192.168.0.7",
+//            (NSString *)kCFStreamPropertyHTTPProxyPort  : @(8888),
+//            @"HTTPSEnable" : [NSNumber numberWithInt:1],
+//            (NSString *)kCFStreamPropertyHTTPSProxyHost : @"192.168.0.7",
+//            (NSString *)kCFStreamPropertyHTTPSProxyPort : @(8888),
+//        };
+//        // 将代理设置添加到会话配置中
+//        configuration.connectionProxyDictionary = proxyDict;
+        ///
+        // 使用配置创建会话
         NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration delegate:self.sessionDelegateObject delegateQueue:[VICacheSessionManager shared].downloadQueue];
         _session = session;
     }
@@ -203,11 +220,14 @@ didCompleteWithError:(nullable NSError *)error {
     } else {
         long long fromOffset = action.range.location;
         long long endOffset = action.range.location + action.range.length - 1;
+
+        // 创建请求
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self.url];
         request.cachePolicy = NSURLRequestReloadIgnoringLocalAndRemoteCacheData;
         NSString *range = [NSString stringWithFormat:@"bytes=%lld-%lld", fromOffset, endOffset];
         [request setValue:range forHTTPHeaderField:@"Range"];
         self.startOffset = action.range.location;
+
         self.task = [self.session dataTaskWithRequest:request];
         [self.task resume];
     }
@@ -282,11 +302,10 @@ didReceiveResponse:(NSURLResponse *)response
     // Only download video/audio data
     if ([mimeType rangeOfString:@"video/"].location == NSNotFound &&
         [mimeType rangeOfString:@"audio/"].location == NSNotFound &&
-        [mimeType rangeOfString:@"text/html"].location == NSNotFound &&
         [mimeType rangeOfString:@"application"].location == NSNotFound) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        NSLog(@"Response Status Code: %ld", (long)httpResponse.statusCode);
-        NSLog(@"Response Headers:mimeType:%@ %@ ", mimeType,httpResponse.allHeaderFields);
+        NSLog(@"Response Allll Status Code: %ld", (long)httpResponse.statusCode);
+        NSLog(@"Response Allll Headers:mimeType:%@ %@ ", mimeType,httpResponse.allHeaderFields);
         completionHandler(NSURLSessionResponseCancel);
     } else {
         if ([self.delegate respondsToSelector:@selector(actionWorker:didReceiveResponse:)]) {
