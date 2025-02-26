@@ -39,5 +39,5 @@
 
 + (NSURL *)assetURLWithURL:(NSURL *)url;
 - (AVPlayerItem *)playerItemWithURL:(NSURL *)url;
-
+- (AVPlayerItem *)playerItemWithURL:(NSURL *)url withConsoleLog:(void (^)( NSString * _Nonnull))consoleLog;
 @end

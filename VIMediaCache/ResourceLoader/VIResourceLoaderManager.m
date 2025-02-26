@@ -54,6 +54,12 @@ static NSString *kCacheScheme;
             NSURL *originURL = nil;
             NSString *originStr = [resourceURL absoluteString];
             originStr = [originStr stringByReplacingOccurrencesOfString:kCacheScheme withString:@""];
+            // 确保 http 和 https 结构正确
+            if ([originStr hasPrefix:@"http//"]) {
+                originStr = [originStr stringByReplacingOccurrencesOfString:@"http//" withString:@"http://"];
+            } else if ([originStr hasPrefix:@"https//"]) {
+                originStr = [originStr stringByReplacingOccurrencesOfString:@"https//" withString:@"https://"];
+            }
             originURL = [NSURL URLWithString:originStr];
             loader = [[VIResourceLoader alloc] initWithURL:originURL];
             loader.delegate = self;
@@ -104,8 +110,25 @@ static NSString *kCacheScheme;
     if (!url) {
         return nil;
     }
-
-    NSURL *assetURL = [NSURL URLWithString:[kCacheScheme stringByAppendingString:[url absoluteString]]];
+    NSString *originalURLString = [url absoluteString];
+    NSString *newURLString = [kCacheScheme stringByAppendingString:originalURLString];
+    // 直接使用 NSURLComponents 解析，避免 NSURL 解析丢失 ":"
+    NSURLComponents *components = [NSURLComponents componentsWithString:newURLString];
+    NSURL *assetURL = components.URL;
+    if (assetURL == nil) {
+        return url;
+    }
+    return assetURL;
+}
++ (NSURL *)assetURLWithURL:(NSURL *)url  withConsoleLog:(void (^)( NSString * _Nonnull))consoleLog{
+    if (!url) {
+        return nil;
+    }
+    NSString *originalURLString = [url absoluteString];
+    NSString *newURLString = [kCacheScheme stringByAppendingString:originalURLString];
+    // 直接使用 NSURLComponents 解析，避免 NSURL 解析丢失 ":"
+    NSURLComponents *components = [NSURLComponents componentsWithString:newURLString];
+    NSURL *assetURL = components.URL;
     if (assetURL == nil) {
             return url;
     }
@@ -114,6 +137,16 @@ static NSString *kCacheScheme;
 
 - (AVPlayerItem *)playerItemWithURL:(NSURL *)url {
     NSURL *assetURL = [VIResourceLoaderManager assetURLWithURL:url];
+    AVURLAsset *urlAsset = [AVURLAsset URLAssetWithURL:assetURL options:nil];
+    [urlAsset.resourceLoader setDelegate:self queue:dispatch_get_main_queue()];
+    AVPlayerItem *playerItem = [AVPlayerItem playerItemWithAsset:urlAsset];
+    if ([playerItem respondsToSelector:@selector(setCanUseNetworkResourcesForLiveStreamingWhilePaused:)]) {
+        playerItem.canUseNetworkResourcesForLiveStreamingWhilePaused = YES;
+    }
+    return playerItem;
+}
+- (AVPlayerItem *)playerItemWithURL:(NSURL *)url withConsoleLog:(void (^)( NSString * _Nonnull))consoleLog{
+    NSURL *assetURL = [VIResourceLoaderManager assetURLWithURL:url withConsoleLog:consoleLog];
     AVURLAsset *urlAsset = [AVURLAsset URLAssetWithURL:assetURL options:nil];
     [urlAsset.resourceLoader setDelegate:self queue:dispatch_get_main_queue()];
     AVPlayerItem *playerItem = [AVPlayerItem playerItemWithAsset:urlAsset];
