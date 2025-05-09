@@ -14,6 +14,7 @@
 #import "VIMediaCacheWorker.h"
 #import "VICacheManager.h"
 #import "VICacheAction.h"
+#import "config.h"
 
 #pragma mark - Class: VIURLSessionDelegateObject
 

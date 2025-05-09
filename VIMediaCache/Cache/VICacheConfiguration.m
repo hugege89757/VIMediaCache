@@ -9,6 +9,7 @@
 #import "VICacheConfiguration.h"
 #import "VICacheManager.h"
 #import <MobileCoreServices/MobileCoreServices.h>
+#import "config.h"
 
 static NSString *kFileNameKey = @"kFileNameKey";
 static NSString *kCacheFragmentsKey = @"kCacheFragmentsKey";
